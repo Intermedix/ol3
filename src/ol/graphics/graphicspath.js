@@ -16,7 +16,7 @@ ol.graphics.Path = function() {
    */
   this.instructions_ = [];
 };
-ol.inherits(ol.graphics.Path, ol.graphics.Object);
+goog.inherits(ol.graphics.Path, ol.graphics.Object);
 
 
 /**

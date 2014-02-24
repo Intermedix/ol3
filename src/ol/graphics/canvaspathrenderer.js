@@ -29,7 +29,7 @@ ol.graphics.CanvasPathRenderer = function(opt_canvas) {
   this.context_ = /** @type {CanvasRenderingContext2D} */
       (canvas.getContext('2d'));
 };
-ol.inherits(ol.graphics.CanvasPathRenderer, ol.graphics.PathRenderer);
+goog.inherits(ol.graphics.CanvasPathRenderer, ol.graphics.PathRenderer);
 
 
 /**

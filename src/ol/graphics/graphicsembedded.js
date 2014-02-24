@@ -45,4 +45,4 @@ ol.graphics.Embedded = function(object, opt_dest, opt_clip) {
    */
   this.type = type;
 };
-ol.inherits(ol.graphics.Embedded, ol.graphics.Object);
+goog.inherits(ol.graphics.Embedded, ol.graphics.Object);

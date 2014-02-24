@@ -58,7 +58,7 @@ ol.graphics.CanvasRenderer = function(opt_canvas) {
    */
   this.cachedDrawings_ = {};
 };
-ol.inherits(ol.graphics.CanvasRenderer, ol.graphics.Renderer);
+goog.inherits(ol.graphics.CanvasRenderer, ol.graphics.Renderer);
 
 
 /**

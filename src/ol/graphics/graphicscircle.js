@@ -23,4 +23,4 @@ ol.graphics.Circle = function(cx, cy, radius) {
    */
   this.radius = radius;
 };
-ol.inherits(ol.graphics.Circle, ol.graphics.Object);
+goog.inherits(ol.graphics.Circle, ol.graphics.Object);
