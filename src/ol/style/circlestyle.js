@@ -5,6 +5,7 @@ goog.provide('ol.style.Circle');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('ol.color');
+goog.require('ol.graphics.Drawing');
 goog.require('ol.render.canvas');
 goog.require('ol.style.Fill');
 goog.require('ol.style.Image');
@@ -25,16 +26,9 @@ ol.style.Circle = function(opt_options) {
 
   /**
    * @private
-   * @type {HTMLCanvasElement}
+   * @type {ol.graphics.Drawing}
    */
-  this.canvas_ = /** @type {HTMLCanvasElement} */
-      (goog.dom.createElement(goog.dom.TagName.CANVAS));
-
-  /**
-   * @private
-   * @type {HTMLCanvasElement}
-   */
-  this.hitDetectionCanvas_ = null;
+  this.drawing_ = new ol.graphics.Drawing();
 
   /**
    * @private
@@ -53,6 +47,7 @@ ol.style.Circle = function(opt_options) {
    * @type {ol.style.Stroke}
    */
   this.stroke_ = goog.isDef(options.stroke) ? options.stroke : null;
+
 
   var size = this.render_();
 
@@ -99,16 +94,8 @@ ol.style.Circle.prototype.getFill = function() {
 /**
  * @inheritDoc
  */
-ol.style.Circle.prototype.getHitDetectionImage = function(pixelRatio) {
-  return this.hitDetectionCanvas_;
-};
-
-
-/**
- * @inheritDoc
- */
 ol.style.Circle.prototype.getImage = function(pixelRatio) {
-  return this.canvas_;
+  return this.drawing_;
 };
 
 
@@ -167,64 +154,22 @@ ol.style.Circle.prototype.unlistenImageChange = goog.nullFunction;
  * @return {number} Size.
  */
 ol.style.Circle.prototype.render_ = function() {
-  var canvas = this.canvas_;
-  var strokeStyle, strokeWidth;
+  var drawing = this.drawing_;
+  drawing.setFillStyle(this.fill_);
+  drawing.setStrokeStyle(this.stroke_);
 
-  if (goog.isNull(this.stroke_)) {
-    strokeWidth = 0;
-  } else {
-    strokeStyle = ol.color.asString(this.stroke_.getColor());
-    strokeWidth = this.stroke_.getWidth();
-    if (!goog.isDef(strokeWidth)) {
-      strokeWidth = ol.render.canvas.defaultLineWidth;
-    }
+  var width = 2 * this.radius_;
+  if (this.stroke_) {
+    width += 2 * (this.stroke_.getWidth() || 1);
   }
 
-  var size = 2 * (this.radius_ + strokeWidth) + 1;
-
-  // draw the circle on the canvas
-
-  canvas.height = size;
-  canvas.width = size;
-
-  var context = /** @type {CanvasRenderingContext2D} */
-      (canvas.getContext('2d'));
-  context.arc(size / 2, size / 2, this.radius_, 0, 2 * Math.PI, true);
-
-  if (!goog.isNull(this.fill_)) {
-    context.fillStyle = ol.color.asString(this.fill_.getColor());
-    context.fill();
+  drawing.drawCircle(width / 2, width / 2, this.radius_);
+  if (this.fill_) {
+    drawing.applyFill();
   }
-  if (!goog.isNull(this.stroke_)) {
-    context.strokeStyle = strokeStyle;
-    context.lineWidth = strokeWidth;
-    context.stroke();
+  if (this.stroke_) {
+    drawing.applyStroke();
   }
 
-  // deal with the hit detection canvas
-
-  if (!goog.isNull(this.fill_)) {
-    this.hitDetectionCanvas_ = canvas;
-  } else {
-    this.hitDetectionCanvas_ = /** @type {HTMLCanvasElement} */
-        (goog.dom.createElement(goog.dom.TagName.CANVAS));
-    canvas = this.hitDetectionCanvas_;
-
-    canvas.height = size;
-    canvas.width = size;
-
-    context = /** @type {CanvasRenderingContext2D} */
-        (canvas.getContext('2d'));
-    context.arc(size / 2, size / 2, this.radius_, 0, 2 * Math.PI, true);
-
-    context.fillStyle = ol.render.canvas.defaultFillStyle;
-    context.fill();
-    if (!goog.isNull(this.stroke_)) {
-      context.strokeStyle = strokeStyle;
-      context.lineWidth = strokeWidth;
-      context.stroke();
-    }
-  }
-
-  return size;
+  return width;
 };

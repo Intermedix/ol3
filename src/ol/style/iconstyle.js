@@ -181,14 +181,6 @@ ol.style.Icon.prototype.getImageState = function() {
 
 
 /**
- * @inheritDoc
- */
-ol.style.Icon.prototype.getHitDetectionImage = function(pixelRatio) {
-  return this.iconImage_.getHitDetectionImage(pixelRatio);
-};
-
-
-/**
  * @return {string|undefined} Image src.
  */
 ol.style.Icon.prototype.getSrc = function() {
@@ -241,12 +233,6 @@ ol.style.Icon.prototype.unlistenImageChange = function(listener, thisArg) {
 ol.style.IconImage_ = function(src, crossOrigin) {
 
   goog.base(this);
-
-  /**
-   * @private
-   * @type {Image|HTMLCanvasElement}
-   */
-  this.hitDetectionImage_ = null;
 
   /**
    * @private
@@ -371,31 +357,6 @@ ol.style.IconImage_.prototype.getImage = function(pixelRatio) {
  */
 ol.style.IconImage_.prototype.getImageState = function() {
   return this.imageState_;
-};
-
-
-/**
- * @param {number} pixelRatio Pixel ratio.
- * @return {Image|HTMLCanvasElement} Image element.
- */
-ol.style.IconImage_.prototype.getHitDetectionImage = function(pixelRatio) {
-  if (goog.isNull(this.hitDetectionImage_)) {
-    if (this.tainting_) {
-      var canvas = /** @type {HTMLCanvasElement} */
-          (goog.dom.createElement(goog.dom.TagName.CANVAS));
-      var width = this.size_[0];
-      var height = this.size_[1];
-      canvas.width = width;
-      canvas.height = height;
-      var context = /** @type {CanvasRenderingContext2D} */
-          (canvas.getContext('2d'));
-      context.fillRect(0, 0, width, height);
-      this.hitDetectionImage_ = canvas;
-    } else {
-      this.hitDetectionImage_ = this.image_;
-    }
-  }
-  return this.hitDetectionImage_;
 };
 
 

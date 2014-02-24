@@ -113,7 +113,8 @@ ol.style.Image.prototype.getAnchor = goog.abstractMethod;
 
 /**
  * @param {number} pixelRatio Pixel ratio.
- * @return {HTMLCanvasElement|HTMLVideoElement|Image} Image element.
+ * @return {ol.graphics.Drawing|HTMLCanvasElement|HTMLVideoElement|Image}
+ *         Image element.
  */
 ol.style.Image.prototype.getImage = goog.abstractMethod;
 
@@ -122,13 +123,6 @@ ol.style.Image.prototype.getImage = goog.abstractMethod;
  * @return {ol.style.ImageState} Image state.
  */
 ol.style.Image.prototype.getImageState = goog.abstractMethod;
-
-
-/**
- * @param {number} pixelRatio Pixel ratio.
- * @return {HTMLCanvasElement|HTMLVideoElement|Image} Image element.
- */
-ol.style.Image.prototype.getHitDetectionImage = goog.abstractMethod;
 
 
 /**
