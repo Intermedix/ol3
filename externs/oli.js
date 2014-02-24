@@ -84,8 +84,8 @@ oli.interaction.DragAndDropEvent.prototype.projection;
 oli.render.Event = function() {};
 
 
-/** @type {CanvasRenderingContext2D|null|undefined} */
-oli.render.Event.prototype.context;
+/** @type {ol.graphics.Drawing|null|undefined} */
+oli.render.Event.prototype.drawing;
 
 
 /** @type {ol.FrameState|undefined} */

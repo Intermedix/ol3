@@ -62,23 +62,23 @@ goog.inherits(ol.renderer.canvas.VectorLayer, ol.renderer.canvas.Layer);
  * @inheritDoc
  */
 ol.renderer.canvas.VectorLayer.prototype.composeFrame =
-    function(frameState, layerState, context) {
+    function(frameState, layerState, drawing) {
 
   var transform = this.getTransform(frameState);
 
-  this.dispatchPreComposeEvent(context, frameState, transform);
+  this.dispatchPreComposeEvent(drawing, frameState, transform);
 
   var replayGroup = this.replayGroup_;
   if (!goog.isNull(replayGroup) && !replayGroup.isEmpty()) {
     var renderGeometryFunction = this.getRenderGeometryFunction_();
     goog.asserts.assert(goog.isFunction(renderGeometryFunction));
-    context.globalAlpha = layerState.opacity;
+    drawing.globalAlpha = layerState.opacity;
     replayGroup.replay(
-        context, frameState.extent, frameState.pixelRatio, transform,
+        drawing, frameState.extent, frameState.pixelRatio, transform,
         frameState.view2DState.rotation, renderGeometryFunction);
   }
 
-  this.dispatchPostComposeEvent(context, frameState, transform);
+  this.dispatchPostComposeEvent(drawing, frameState, transform);
 
 };
 

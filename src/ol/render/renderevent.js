@@ -23,11 +23,11 @@ ol.render.EventType = {
  * @param {Object=} opt_target Target.
  * @param {ol.render.IVectorContext=} opt_vectorContext Vector context.
  * @param {ol.FrameState=} opt_frameState Frame state.
- * @param {?CanvasRenderingContext2D=} opt_context Context.
+ * @param {?ol.graphics.Drawing=} opt_drawing Drawing.
  * @param {?ol.webgl.Context=} opt_glContext WebGL Context.
  */
 ol.render.Event = function(
-    type, opt_target, opt_vectorContext, opt_frameState, opt_context,
+    type, opt_target, opt_vectorContext, opt_frameState, opt_drawing,
     opt_glContext) {
 
   goog.base(this, type, opt_target);
@@ -43,9 +43,9 @@ ol.render.Event = function(
   this.frameState = opt_frameState;
 
   /**
-   * @type {CanvasRenderingContext2D|null|undefined}
+   * @type {ol.graphics.Drawing|null|undefined}
    */
-  this.context = opt_context;
+  this.drawing = opt_drawing;
 
   /**
    * @type {ol.webgl.Context|null|undefined}

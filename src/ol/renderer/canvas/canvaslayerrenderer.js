@@ -1,6 +1,8 @@
 goog.provide('ol.renderer.canvas.Layer');
 
 goog.require('goog.vec.Mat4');
+goog.require('ol.graphics.Drawing');
+goog.require('ol.graphics.Embeddable');
 goog.require('ol.layer.Layer');
 goog.require('ol.render.Event');
 goog.require('ol.render.EventType');
@@ -33,63 +35,46 @@ goog.inherits(ol.renderer.canvas.Layer, ol.renderer.Layer);
 /**
  * @param {ol.FrameState} frameState Frame state.
  * @param {ol.layer.LayerState} layerState Layer state.
- * @param {CanvasRenderingContext2D} context Context.
+ * @param {ol.graphics.Drawing} drawing Drawing.
  */
 ol.renderer.canvas.Layer.prototype.composeFrame =
-    function(frameState, layerState, context) {
+    function(frameState, layerState, drawing) {
 
-  this.dispatchPreComposeEvent(context, frameState);
+  this.dispatchPreComposeEvent(drawing, frameState);
 
   var image = this.getImage();
   if (!goog.isNull(image)) {
     var imageTransform = this.getImageTransform();
-    context.globalAlpha = layerState.opacity;
+    drawing.globalAlpha = layerState.opacity;
 
-    // for performance reasons, context.setTransform is only used
-    // when the view is rotated. see http://jsperf.com/canvas-transform
-    if (frameState.view2DState.rotation === 0) {
-      var dx = goog.vec.Mat4.getElement(imageTransform, 0, 3);
-      var dy = goog.vec.Mat4.getElement(imageTransform, 1, 3);
-      var dw = image.width * goog.vec.Mat4.getElement(imageTransform, 0, 0);
-      var dh = image.height * goog.vec.Mat4.getElement(imageTransform, 1, 1);
-      context.drawImage(image, 0, 0, +image.width, +image.height,
-          Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
-    } else {
-      context.setTransform(
-          goog.vec.Mat4.getElement(imageTransform, 0, 0),
-          goog.vec.Mat4.getElement(imageTransform, 1, 0),
-          goog.vec.Mat4.getElement(imageTransform, 0, 1),
-          goog.vec.Mat4.getElement(imageTransform, 1, 1),
-          goog.vec.Mat4.getElement(imageTransform, 0, 3),
-          goog.vec.Mat4.getElement(imageTransform, 1, 3));
-      context.drawImage(image, 0, 0);
-      context.setTransform(1, 0, 0, 1, 0, 0);
-    }
+    drawing.setTransform(imageTransform);
+    drawing.embed(image);
+    drawing.resetTransform();
   }
 
-  this.dispatchPostComposeEvent(context, frameState);
+  this.dispatchPostComposeEvent(drawing, frameState);
 
 };
 
 
 /**
  * @param {ol.render.EventType} type Event type.
- * @param {CanvasRenderingContext2D} context Context.
+ * @param {ol.graphics.Drawing} drawing Drawing.
  * @param {ol.FrameState} frameState Frame state.
  * @param {goog.vec.Mat4.Number=} opt_transform Transform.
  * @private
  */
 ol.renderer.canvas.Layer.prototype.dispatchComposeEvent_ =
-    function(type, context, frameState, opt_transform) {
+    function(type, drawing, frameState, opt_transform) {
   var layer = this.getLayer();
   if (layer.hasListener(type)) {
     var transform = goog.isDef(opt_transform) ?
         opt_transform : this.getTransform(frameState);
     var render = new ol.render.canvas.Immediate(
-        context, frameState.pixelRatio, frameState.extent, transform,
+        drawing, frameState.pixelRatio, frameState.extent, transform,
         frameState.view2DState.rotation);
     var composeEvent = new ol.render.Event(type, layer, render, frameState,
-        context, null);
+        drawing, null);
     layer.dispatchEvent(composeEvent);
     render.flush();
   }
@@ -97,33 +82,33 @@ ol.renderer.canvas.Layer.prototype.dispatchComposeEvent_ =
 
 
 /**
- * @param {CanvasRenderingContext2D} context Context.
+ * @param {ol.graphics.Drawing} drawing Drawing.
  * @param {ol.FrameState} frameState Frame state.
  * @param {goog.vec.Mat4.Number=} opt_transform Transform.
  * @protected
  */
 ol.renderer.canvas.Layer.prototype.dispatchPostComposeEvent =
-    function(context, frameState, opt_transform) {
-  this.dispatchComposeEvent_(ol.render.EventType.POSTCOMPOSE, context,
+    function(drawing, frameState, opt_transform) {
+  this.dispatchComposeEvent_(ol.render.EventType.POSTCOMPOSE, drawing,
       frameState, opt_transform);
 };
 
 
 /**
- * @param {CanvasRenderingContext2D} context Context.
+ * @param {ol.graphics.Drawing} drawing Drawing.
  * @param {ol.FrameState} frameState Frame state.
  * @param {goog.vec.Mat4.Number=} opt_transform Transform.
  * @protected
  */
 ol.renderer.canvas.Layer.prototype.dispatchPreComposeEvent =
-    function(context, frameState, opt_transform) {
-  this.dispatchComposeEvent_(ol.render.EventType.PRECOMPOSE, context,
+    function(drawing, frameState, opt_transform) {
+  this.dispatchComposeEvent_(ol.render.EventType.PRECOMPOSE, drawing,
       frameState, opt_transform);
 };
 
 
 /**
- * @return {HTMLCanvasElement|HTMLVideoElement|Image} Canvas.
+ * @return {ol.graphics.Embeddable} Canvas.
  */
 ol.renderer.canvas.Layer.prototype.getImage = goog.abstractMethod;
 

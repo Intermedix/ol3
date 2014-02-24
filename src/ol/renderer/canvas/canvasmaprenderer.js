@@ -8,6 +8,8 @@ goog.require('goog.dom.TagName');
 goog.require('goog.style');
 goog.require('goog.vec.Mat4');
 goog.require('ol.css');
+goog.require('ol.graphics.CanvasRenderer');
+goog.require('ol.graphics.Drawing');
 goog.require('ol.layer.Image');
 goog.require('ol.layer.Tile');
 goog.require('ol.layer.Vector');
@@ -47,16 +49,21 @@ ol.renderer.canvas.Map = function(container, map) {
 
   /**
    * @private
-   * @type {boolean}
+   * @type {ol.graphics.Drawing}
    */
-  this.renderedVisible_ = true;
+  this.drawing_ = new ol.graphics.Drawing();
 
   /**
    * @private
-   * @type {CanvasRenderingContext2D}
+   * @type {ol.graphics.CanvasRenderer}
    */
-  this.context_ = /** @type {CanvasRenderingContext2D} */
-      (this.canvas_.getContext('2d'));
+  this.graphicsRenderer_ = new ol.graphics.CanvasRenderer(this.canvas_);
+
+  /**
+   * @private
+   * @type {boolean}
+   */
+  this.renderedVisible_ = true;
 
   /**
    * @private
@@ -91,9 +98,9 @@ ol.renderer.canvas.Map.prototype.createLayerRenderer = function(layer) {
  * @private
  */
 ol.renderer.canvas.Map.prototype.dispatchComposeEvent_ =
-    function(type, frameState) {
+    function(type, frameState, drawing) {
   var map = this.getMap();
-  var context = this.context_;
+  // var context = this.context_;
   if (map.hasListener(type)) {
     var view2DState = frameState.view2DState;
     var pixelRatio = frameState.pixelRatio;
@@ -104,10 +111,10 @@ ol.renderer.canvas.Map.prototype.dispatchComposeEvent_ =
         -pixelRatio / view2DState.resolution,
         -view2DState.rotation,
         -view2DState.center[0], -view2DState.center[1]);
-    var render = new ol.render.canvas.Immediate(context, pixelRatio,
+    var render = new ol.render.canvas.Immediate(drawing, pixelRatio,
         frameState.extent, this.transform_, view2DState.rotation);
     var composeEvent = new ol.render.Event(type, map, render, frameState,
-        context, null);
+        drawing, null);
     map.dispatchEvent(composeEvent);
     render.flush();
   }
@@ -138,19 +145,20 @@ ol.renderer.canvas.Map.prototype.renderFrame = function(frameState) {
     return;
   }
 
-  var context = this.context_;
+  var drawing = new ol.graphics.Drawing();
+  var graphicsRenderer = this.graphicsRenderer_;
   var width = frameState.size[0] * frameState.pixelRatio;
   var height = frameState.size[1] * frameState.pixelRatio;
   if (this.canvas_.width != width || this.canvas_.height != height) {
-    this.canvas_.width = width;
-    this.canvas_.height = height;
+    graphicsRenderer.setSize(width, height);
   } else {
-    context.clearRect(0, 0, this.canvas_.width, this.canvas_.height);
+    graphicsRenderer.clear();
   }
 
   this.calculateMatrices2D(frameState);
 
-  this.dispatchComposeEvent_(ol.render.EventType.PRECOMPOSE, frameState);
+  this.dispatchComposeEvent_(ol.render.EventType.PRECOMPOSE, frameState,
+      drawing);
 
   var layerStates = frameState.layerStates;
   var layersArray = frameState.layersArray;
@@ -168,10 +176,13 @@ ol.renderer.canvas.Map.prototype.renderFrame = function(frameState) {
       continue;
     }
     layerRenderer.prepareFrame(frameState, layerState);
-    layerRenderer.composeFrame(frameState, layerState, context);
+    layerRenderer.composeFrame(frameState, layerState, drawing);
   }
 
-  this.dispatchComposeEvent_(ol.render.EventType.POSTCOMPOSE, frameState);
+  this.dispatchComposeEvent_(ol.render.EventType.POSTCOMPOSE, frameState,
+      drawing);
+
+  drawing.renderTo(graphicsRenderer);
 
   if (!this.renderedVisible_) {
     goog.style.setElementShown(this.canvas_, true);

@@ -139,8 +139,9 @@ ol.source.ImageVector.prototype.canvasFunctionInternal_ =
 
   var transform = this.getTransform_(ol.extent.getCenter(extent),
       resolution, pixelRatio, size);
-  replayGroup.replay(this.canvasContext_, extent, pixelRatio, transform, 0,
-      goog.functions.TRUE);
+  // TODO: Come back to this once everything stabilizes more.
+  // replayGroup.replay(this.canvasContext_, extent, pixelRatio, transform, 0,
+  //     goog.functions.TRUE);
 
   this.replayGroup_ = replayGroup;
 
